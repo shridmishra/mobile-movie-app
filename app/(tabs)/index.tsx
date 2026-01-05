@@ -1,12 +1,60 @@
-import { Link } from "expo-router";
-import { Text, View } from "react-native";
+import SearchBar from "@/components/SearchBar";
+import { icons } from "@/constants/icons";
+import { images } from "@/constants/images";
+import { ActivityIndicator, FlatList, Image, ScrollView, Text, View } from "react-native";
+import { useRouter } from "expo-router";
+import { fetchMovies } from "@/services/api";
+import { useFetch } from "@/services/useFetch";
+import MovieCard from "@/components/MovieCard";
+
+
 
 export default function Index() {
+
+  const router = useRouter();
+  const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: '' }));
+
   return (
-    <View className="flex-1 justify-center items-center bg-black">
-      <Text className="text-5xl text-white font-bold mb-4">Welcome</Text>
-      <Link href="/onboarding" className="text-blue-500 text-lg">Onboarding</Link>
-      <Link href="/movie/avenger">Avenger Movie</Link>
+    <View className="flex-1 bg-primary ">
+      <Image source={images.bg} className="absolute z-0 w-full" />
+      <ScrollView className="flex-5 px-1" showsVerticalScrollIndicator={false} contentContainerStyle={{ minHeight: '100%', paddingBottom: 10 }}>
+        <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto" />
+        {moviesLoading ? (
+          <ActivityIndicator size="large" color="#0000ff" className="mt-10 self-center " />
+        ) : moviesError ? (
+          <Text>Errlr: {moviesError?.message}</Text>
+        ) : (
+          <View className="flex-1 mt-5 px-8" >
+            <SearchBar onPress={() => router.push('/search')} placeholder='Search for a movie' />
+            <>
+              <Text className="text-white text-lg font-bold mt-5 mb-3">Latest Movies</Text>
+              <FlatList
+                data={movies}
+                renderItem={({ item }) => (
+                  <MovieCard 
+                  {...item}
+                  />
+                
+                )}
+                keyExtractor={(item) => item.id.toString()}
+                numColumns={3}
+                columnWrapperStyle={{ justifyContent: 'flex-start', paddingRight: 5, gap: 20, marginBottom: 10 }}
+
+                className="mt-2 pb-32"
+                scrollEnabled={false}
+
+              />
+            </>
+          </View>
+
+        )}
+
+
+
+
+
+
+      </ScrollView>
     </View>
   );
 }
